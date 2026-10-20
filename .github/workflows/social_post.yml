@@ -1,0 +1,40 @@
+name: Daily Social Post
+
+on:
+  schedule:
+    - cron: '0 14 * * *'  # 9am CST daily
+  workflow_dispatch:       # allow manual trigger from GitHub UI
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install FFmpeg
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r social/requirements.txt
+
+      - name: Run post script
+        working-directory: social
+        env:
+          FB_PAGE_ID:            ${{ secrets.FB_PAGE_ID }}
+          FB_APP_ID:             ${{ secrets.FB_APP_ID }}
+          FB_APP_SECRET:         ${{ secrets.FB_APP_SECRET }}
+          FB_PAGE_ACCESS_TOKEN:  ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          IG_ACCOUNT_ID:         ${{ secrets.IG_ACCOUNT_ID }}
+          ANTHROPIC_API_KEY:     ${{ secrets.ANTHROPIC_API_KEY }}
+          UNSPLASH_ACCESS_KEY:   ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY:    ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: python post.py
